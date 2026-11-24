@@ -1,465 +1,445 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- إعدادات تشغيل الموقع كتطبيق على الموبايل (PWA) -->
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#090a0f">
-    <meta name="application-name" content="AETHER">
-    
-    <title>AETHER // شات مستقبلي</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: radial-gradient(circle at top left, #1a0b2e, #090a0f 60%, #0d1b2a);
-            color: #e0e6ed;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100dvh; /* متوافق مع شاشات الموبايل بالكامل */
-            overflow: hidden;
-        }
-
-        /* كرات الإضاءة الخلفية */
-        .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-            animation: float 8s infinite alternate ease-in-out;
-            pointer-events: none;
-        }
-        .orb-1 { width: 280px; height: 280px; background: rgba(0, 242, 254, 0.25); top: 5%; right: 10%; }
-        .orb-2 { width: 320px; height: 320px; background: rgba(157, 78, 221, 0.25); bottom: 5%; left: 10%; animation-delay: -4s; }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(25px, -25px) scale(1.1); }
-        }
-
-        /* الحاوية الزجاجية الرئيسية */
-        .cyber-deck {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 480px;
-            height: 100dvh;
-            background: rgba(17, 25, 40, 0.7);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* على شاشات الكمبيوتر يأخذ حواف دائرية وارتفاع محدد */
-        @media (min-width: 520px) {
-            .cyber-deck {
-                height: 88vh;
-                border-radius: 24px;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            }
-        }
-
-        /* الهيدر */
-        .deck-header {
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 16px;
-            letter-spacing: 1px;
-            color: #00f2fe;
-            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #00f2fe;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #00f2fe;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .user-badge {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(0, 242, 254, 0.3);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 12px;
-            width: 95px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 13px;
-            outline: none;
-            text-align: center;
-        }
-
-        .icon-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #94a3b8;
-            padding: 5px 9px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 12px;
-            font-family: 'Cairo', sans-serif;
-            transition: all 0.25s;
-        }
-
-        .icon-btn.active-ghost {
-            background: rgba(255, 42, 109, 0.2);
-            border-color: #ff2a6d;
-            color: #ff2a6d;
-            box-shadow: 0 0 12px rgba(255, 42, 109, 0.4);
-        }
-
-        .icon-btn.active-sound {
-            border-color: rgba(0, 242, 254, 0.4);
-            color: #00f2fe;
-        }
-
-        /* منطقة الرسايل */
-        .stream-area {
-            flex: 1;
-            padding: 18px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 242, 254, 0.3) transparent;
-        }
-
-        /* بطاقة الرسالة */
-        .data-card {
-            max-width: 82%;
-            padding: 10px 14px;
-            border-radius: 14px;
-            position: relative;
-            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .data-card.vanish {
-            opacity: 0;
-            transform: scale(0.85);
-            filter: blur(5px);
-        }
-
-        /* رسالتي */
-        .my-card {
-            align-self: flex-start;
-            background: linear-gradient(135deg, rgba(0, 242, 254, 0.18), rgba(79, 172, 254, 0.08));
-            border: 1px solid rgba(0, 242, 254, 0.35);
-            border-right: 4px solid #00f2fe;
-        }
-
-        /* رسالة الطرف التاني */
-        .other-card {
-            align-self: flex-end;
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(157, 78, 221, 0.35);
-            border-left: 4px solid #9d4edd;
-        }
-
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            font-size: 11px;
-            margin-bottom: 4px;
-            opacity: 0.85;
-        }
-
-        .my-card .card-sender { color: #00f2fe; font-weight: 700; }
-        .other-card .card-sender { color: #c77dff; font-weight: 700; }
-
-        .card-body {
-            font-size: 14.5px;
-            line-height: 1.5;
-            word-wrap: break-word;
-        }
-
-        .ephemeral-tag {
-            font-size: 10px;
-            color: #ff2a6d;
-            margin-top: 4px;
-            display: block;
-        }
-
-        /* شريط الإدخال */
-        .input-dock {
-            padding: 12px 16px;
-            background: rgba(9, 10, 15, 0.55);
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            display: flex;
-            gap: 8px;
-        }
-
-        .input-dock input {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #fff;
-            padding: 11px 16px;
-            border-radius: 16px;
-            font-family: 'Cairo', sans-serif;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        .input-dock input:focus {
-            border-color: #00f2fe;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
-        }
-
-        .send-trigger {
-            background: linear-gradient(135deg, #00f2fe, #4facfe);
-            color: #090a0f;
-            border: none;
-            padding: 0 20px;
-            border-radius: 16px;
-            font-family: 'Cairo', sans-serif;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .send-trigger:active {
-            transform: scale(0.95);
-        }
-    </style>
-</head>
-<body>
-
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-
-<div class="cyber-deck">
-    <div class="deck-header">
-        <div class="brand">
-            <div class="status-dot"></div>
-            <span>AETHER</span>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventPass - Event Booking</title>
+    <link
+      rel="stylesheet"
+      href="./fontawesome-free-7.3.1-web/css/all.min.css"
+    />
+    <link rel="stylesheet" href="./css/main.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container nav-inner">
+        <div class="elite">
+          <a href="#home">EventPass</a>
         </div>
-        <div class="controls">
-            <button id="soundToggle" class="icon-btn active-sound" title="تفعيل/كتم صوت الإشعارات">🔔</button>
-            <button id="ghostToggle" class="icon-btn" title="تفعيل التدمير الذاتي للرسائل بعد 10 ثواني">⏳ 10ث</button>
-            <input type="text" id="usernameInput" class="user-badge" placeholder="اكتب اسمك">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="#home">Home</a></li>
+          <li><a class="nav-link" href="#events">Events</a></li>
+          <li><a class="nav-link" href="#booking">Book Seat</a></li>
+          <li><a class="nav-link" href="#admin">Admin</a></li>
+          <li><a class="nav-link" href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+    <section class="home" id="home">
+      <div class="container">
+        <div class="h-title">
+          <h1>Book Your Next Event</h1>
+          <p>
+            Discover live concerts, tech conferences, and workshops near you.
+            Reserve your spot or pick your seat easily.
+          </p>
         </div>
-    </div>
+        <form class="h-form" action="#events">
+          <div class="form-row-top">
+            <div class="form-group">
+              <label for="eventSearch">Event or City</label>
+              <div class="input-icon-wrap">
+                <i class="fa-solid fa-location-dot"></i>
+                <input
+                  id="eventSearch"
+                  class="form-control"
+                  type="text"
+                  placeholder="Search event, venue, or city"
+                />
+              </div>
+            </div>
 
-    <div class="stream-area" id="streamArea"></div>
+            <div class="form-group">
+              <label for="eventCategory">Category</label>
+              <select id="eventCategory" class="form-select">
+                <option value="">All Categories</option>
+                <option value="conference">Conference</option>
+                <option value="workshop">Workshop</option>
+                <option value="concert">Concert</option>
+                <option value="meetup">Meetup</option>
+              </select>
+            </div>
 
-    <div class="input-dock">
-        <input type="text" id="messageInput" placeholder="اكتب إشارة جديدة...">
-        <button id="sendBtn" class="send-trigger">بث</button>
-    </div>
-</div>
+            <div class="form-group">
+              <label for="eventDate">Date</label>
+              <input id="eventDate" class="form-control" type="date" />
+            </div>
+          </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+          <div class="form-row-bottom">
+            <div class="form-group">
+              <label for="guestsCount">Seats Needed</label>
+              <select id="guestsCount" class="form-select">
+                <option value="1">1 Seat</option>
+                <option value="2">2 Seats</option>
+                <option value="3">3 Seats</option>
+                <option value="4">4+ Seats</option>
+              </select>
+            </div>
 
-    // ⚠️ استبدل البيانات التالية ببيانات مشروعك من Firebase ⚠️
-    const firebaseConfig = {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT_ID.appspot.com",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
-    };
+            <div class="form-group">
+              <label for="maxPrice">Max Ticket Price</label>
+              <select id="maxPrice" class="form-select">
+                <option value="">Any Price</option>
+                <option value="50">$50</option>
+                <option value="100">$100</option>
+                <option value="250">$250</option>
+              </select>
+            </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const messagesRef = ref(db, 'aether_messages');
+            <div class="form-group form-btn-wrap">
+              <button type="submit" class="btn2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Find Events
+              </button>
+            </div>
+          </div>
+        </form>
+        <div class="line-home">
+          <div class="stat-item">
+            <h5>120+</h5>
+            <p>Monthly Events</p>
+          </div>
+          <div class="stat-item">
+            <h5>45,000+</h5>
+            <p>Booked Seats</p>
+          </div>
+          <div class="stat-item">
+            <h5>35+</h5>
+            <p>Partner Venues</p>
+          </div>
+          <div class="stat-item">
+            <h5>99%</h5>
+            <p>Check-in Rate</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="events-section" id="events">
+      <div class="container">
+        <div class="title">
+          <div class="title1"><h2>Upcoming Lineup</h2></div>
+          <div class="title2">
+            <h2>Featured <span>Events</span></h2>
+            <p>
+              Pick an event, check available seats, and complete your booking
+            </p>
+          </div>
+        </div>
+        <div class="events-grid">
+          <div class="event-card">
+            <div class="card-img-wrap">
+              <img
+                src="./image/event-head.jpg"
+                class="main-img"
+                alt="Cairo Tech Summit"
+              />
+            </div>
+            <div class="card-body">
+              <div class="price-row">
+                <h5 class="t-card">$85</h5>
+                <span class="l2-text">Dec 12, 2026 &bull; 10:00 AM</span>
+              </div>
+              <p class="l3-text">
+                Tech Conference &bull; Main Hall &bull; VIP &amp; Standard
+              </p>
+              <div class="card-text">
+                <p class="modern">Cairo Tech &amp; Web Summit</p>
+                <span class="last-line">
+                  Smart Village Convention Center, Giza
+                </span>
+              </div>
+              <div class="card-footer-row">
+                <div class="avatar1">
+                  <img src="./image/card3.avif" alt="Omar Hassan" />
+                  <span>Omar Hassan</span>
+                </div>
+                <a href="#booking" class="btn-card">Book Now</a>
+              </div>
+            </div>
+          </div>
+          <div class="event-card">
+            <div class="card-img-wrap">
+              <img
+                src="./image/event2.jpg"
+                class="main-img"
+                alt="UI UX Design Workshop"
+              />
+            </div>
+            <div class="card-body">
+              <div class="price-row">
+                <h5 class="t-card">$45</h5>
+                <span class="l2-text">Dec 18, 2026 &bull; 2:00 PM</span>
+              </div>
+              <p class="l3-text">Workshop &bull; Lab B &bull; Hands-on</p>
+              <div class="card-text">
+                <p class="modern">Modern UI &amp; Layout Workshop</p>
+                <span class="last-line">Maadi Creative Hub, Cairo</span>
+              </div>
+              <div class="card-footer-row">
+                <div class="avatar1">
+                  <img src="./image/review1.jpg" alt="Nadia Adel" />
+                  <span>Nadia Adel</span>
+                </div>
+                <a href="#booking" class="btn-card">Book Now</a>
+              </div>
+            </div>
+          </div>
+          <div class="event-card">
+            <div class="card-img-wrap">
+              <img
+                src="./image/event3.jpg"
+                class="main-img"
+                alt="Acoustic Night Live"
+              />
+              <span class="badge-photos">
+                <i class="fa-solid fa-chair"></i> 29 Seats Left
+              </span>
+              <span class="icon-heart"><i class="fa-solid fa-heart"></i></span>
+            </div>
+            <div class="card-body">
+              <div class="price-row">
+                <h5 class="t-card">$60</h5>
+                <span class="l2-text">Dec 24, 2026 &bull; 8:00 PM</span>
+              </div>
+              <p class="l3-text">Live Night &bull; Theater &bull; Seated</p>
+              <div class="card-text">
+                <p class="modern">Winter Acoustic &amp; Indie Night</p>
+                <span class="last-line">Zamalek Cultural Hall, Cairo</span>
+              </div>
+              <div class="card-footer-row">
+                <div class="avatar1">
+                  <img src="./image/david.jpg" alt="Karim Mansour" />
+                  <span>Karim Mansour</span>
+                </div>
+                <a href="#booking" class="btn-card">Book Now</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="view-all-wrap">
+          <a href="#booking" class="btn2">
+            Reserve Seats <i class="fa-solid fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+    <section class="booking-section" id="booking">
+      <div class="container">
+        <div class="title">
+          <div class="title1"><h2>Seat Selection &amp; Calculator</h2></div>
+          <div class="title2">
+            <h2>Reserve <span> Your Spot</span></h2>
+            <p>Seat layout preview, ticket calculator, and booking form</p>
+          </div>
+        </div>
 
-    const streamArea = document.getElementById('streamArea');
-    const messageInput = document.getElementById('messageInput');
-    const usernameInput = document.getElementById('usernameInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const ghostToggle = document.getElementById('ghostToggle');
-    const soundToggle = document.getElementById('soundToggle');
+        <div class="booking-grid">
+          <div class="seats-box">
+            <h3>Seats Layout</h3>
+            <p class="seats-sub">Stage / Speaker Front</p>
+            <div class="stage-bar">STAGE</div>
 
-    let isGhostMode = false;
-    let isSoundEnabled = true;
-    const pageLoadTime = Date.now();
+            <div class="seats-grid">
+              <span class="seat booked">A1</span>
+              <span class="seat booked">A2</span>
+              <span class="seat selected">A3</span>
+              <span class="seat selected">A4</span>
+              <span class="seat available">A5</span>
+              <span class="seat available">A6</span>
+              <span class="seat available">B1</span>
+              <span class="seat booked">B2</span>
+              <span class="seat available">B3</span>
+              <span class="seat available">B4</span>
+              <span class="seat available">B5</span>
+              <span class="seat available">B6</span>
+            </div>
 
-    // استرجاع الاسم المحفوظ أو تعيين اسم عشوائي مبدئي
-    const savedName = localStorage.getItem('aether_username');
-    if (savedName) {
-        usernameInput.value = savedName;
-    } else {
-        const randomId = Math.floor(100 + Math.random() * 900);
-        usernameInput.value = `مستخدم_${randomId}`;
-    }
+            <div class="seat-legend">
+              <span><i class="legend-dot dot-available"></i> Available</span>
+              <span><i class="legend-dot dot-selected"></i> Selected</span>
+              <span><i class="legend-dot dot-booked"></i> Booked</span>
+            </div>
+            <div class="calc-box">
+              <h3>Ticket &amp; Price Calculator</h3>
+              <div class="calc-screen">
+                <span class="calc-label">Total</span>
+                <span class="calc-value">$170</span>
+              </div>
+              <div class="calc-keys">
+                <button type="button" class="calc-btn calc-op">C</button>
+                <button type="button" class="calc-btn calc-op">/</button>
+                <button type="button" class="calc-btn calc-op">*</button>
+                <button type="button" class="calc-btn calc-op">-</button>
 
-    usernameInput.addEventListener('input', () => {
-        localStorage.setItem('aether_username', usernameInput.value.trim());
-    });
+                <button type="button" class="calc-btn">7</button>
+                <button type="button" class="calc-btn">8</button>
+                <button type="button" class="calc-btn">9</button>
+                <button type="button" class="calc-btn calc-op">+</button>
 
-    // توليد نغمة تنبيه إلكترونية خفيفة بدون ملفات خارجية
-    function playPingSound() {
-        if (!isSoundEnabled) return;
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(680, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1020, ctx.currentTime + 0.12);
-            gain.gain.setValueAtTime(0.08, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 0.25);
-        } catch (e) {}
-    }
+                <button type="button" class="calc-btn">4</button>
+                <button type="button" class="calc-btn">5</button>
+                <button type="button" class="calc-btn">6</button>
+                <button type="button" class="calc-btn calc-eq">=</button>
 
-    soundToggle.addEventListener('click', () => {
-        isSoundEnabled = !isSoundEnabled;
-        soundToggle.textContent = isSoundEnabled ? '🔔' : '🔕';
-        soundToggle.classList.toggle('active-sound', isSoundEnabled);
-    });
+                <button type="button" class="calc-btn">1</button>
+                <button type="button" class="calc-btn">2</button>
+                <button type="button" class="calc-btn">3</button>
+                <button type="button" class="calc-btn">.</button>
 
-    ghostToggle.addEventListener('click', () => {
-        isGhostMode = !isGhostMode;
-        ghostToggle.classList.toggle('active-ghost', isGhostMode);
-    });
+                <button type="button" class="calc-btn calc-zero">0</button>
+              </div>
+            </div>
+          </div>
+          <form class="booking-form">
+            <h3>Booking Details</h3>
+            <div class="form-group">
+              <label for="selectedEvent">Event</label>
+              <select id="selectedEvent" class="form-select">
+                <option value="summit">
+                  Cairo Tech &amp; Web Summit ($85)
+                </option>
+                <option value="workshop">
+                  Modern UI &amp; Layout Workshop ($45)
+                </option>
+                <option value="concert">
+                  Winter Acoustic &amp; Indie Night ($60)
+                </option>
+              </select>
+            </div>
 
-    function formatTime(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
-    }
+            <div class="form-group">
+              <label for="attendeeName">Full Name</label>
+              <input
+                id="attendeeName"
+                type="text"
+                class="form-control"
+                placeholder="Enter your full name"
+              />
+            </div>
 
-    function sendMessage() {
-        const text = messageInput.value.trim();
-        const sender = usernameInput.value.trim() || "مجهول";
-        if (!text) return;
+            <div class="form-group">
+              <label for="attendeeEmail">Email Address</label>
+              <input
+                id="attendeeEmail"
+                type="email"
+                class="form-control"
+                placeholder="name@example.com"
+              />
+            </div>
 
-        push(messagesRef, {
-            sender: sender,
-            text: text,
-            timestamp: Date.now(),
-            ephemeral: isGhostMode
-        });
+            <div class="form-group">
+              <label for="seatCode">Selected Seats</label>
+              <input
+                id="seatCode"
+                type="text"
+                class="form-control"
+                value="A3, A4"
+              />
+            </div>
 
-        messageInput.value = '';
-    }
+            <button type="submit" class="btn2 full-btn">Confirm Booking</button>
+          </form>
+        </div>
+      </div>
+    </section>
+    <section class="admin-section" id="admin">
+      <div class="container">
+        <div class="title">
+          <div class="title1"><h2>Admin View</h2></div>
+          <div class="title2">
+            <h2>Bookings <span>Overview</span></h2>
+            <p>View current event reservations at a glance</p>
+          </div>
+        </div>
 
-    onChildAdded(messagesRef, (snapshot) => {
-        const data = snapshot.val();
-        const msgKey = snapshot.key;
-        const currentUser = usernameInput.value.trim() || "مجهول";
-        const isMe = (data.sender === currentUser);
+        <div class="table-wrap">
+          <table class="bookings-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Attendee</th>
+                <th>Event</th>
+                <th>Seats</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#BK-101</td>
+                <td>Salma Ibrahim</td>
+                <td>Cairo Tech &amp; Web Summit</td>
+                <td>A3, A4</td>
+                <td>
+                  <span class="status-pill status-confirmed">Confirmed</span>
+                </td>
+              </tr>
+              <tr>
+                <td>#BK-102</td>
+                <td>Youssef Kamal</td>
+                <td>Modern UI &amp; Layout Workshop</td>
+                <td>B1</td>
+                <td>
+                  <span class="status-pill status-pending">Pending</span>
+                </td>
+              </tr>
+              <tr>
+                <td>#BK-103</td>
+                <td>Mona Samir</td>
+                <td>Winter Acoustic &amp; Indie Night</td>
+                <td>A5, A6</td>
+                <td>
+                  <span class="status-pill status-confirmed">Confirmed</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-        // تشغيل صوت التنبيه للرسائل الجديدة الواردة من الآخرين فقط
-        if (!isMe && data.timestamp > pageLoadTime) {
-            playPingSound();
-        }
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="title">
+          <div class="title1"><h2>Contact Us</h2></div>
+          <div class="title2">
+            <h2>Get In <span>Touch</span></h2>
+            <p>
+              Have a question about tickets, group seats, or hosting an event?
+            </p>
+          </div>
+        </div>
 
-        const card = document.createElement('div');
-        card.id = `msg-${msgKey}`;
-        card.className = `data-card ${isMe ? 'my-card' : 'other-card'}`;
+        <div class="cards">
+          <div class="card1">
+            <div class="icon1"><i class="fa-solid fa-phone"></i></div>
+            <h6>Call Us</h6>
+            <p>Mon-Fri from 9am to 6pm</p>
+            <span>+20 2 5550 1234</span>
+          </div>
 
-        // حماية النصوص من حقن الأكواد (XSS)
-        const safeSender = document.createTextNode(data.sender);
-        const safeText = document.createTextNode(data.text);
+          <div class="card2">
+            <div class="icon2"><i class="fa-solid fa-envelope"></i></div>
+            <h6>Email Us</h6>
+            <p>We reply within 24 hours</p>
+            <span>support@eventpass.com</span>
+          </div>
 
-        const metaDiv = document.createElement('div');
-        metaDiv.className = 'card-meta';
-        
-        const senderSpan = document.createElement('span');
-        senderSpan.className = 'card-sender';
-        senderSpan.appendChild(safeSender);
+          <div class="card3">
+            <div class="icon3"><i class="fa-solid fa-location-dot"></i></div>
+            <h6>Visit Us</h6>
+            <p>Box office &amp; support</p>
+            <span>Maadi, Cairo</span>
+          </div>
 
-        const timeSpan = document.createElement('span');
-        timeSpan.textContent = formatTime(data.timestamp);
-
-        metaDiv.appendChild(senderSpan);
-        metaDiv.appendChild(timeSpan);
-
-        const bodyDiv = document.createElement('div');
-        bodyDiv.className = 'card-body';
-        bodyDiv.appendChild(safeText);
-
-        card.appendChild(metaDiv);
-        card.appendChild(bodyDiv);
-
-        if (data.ephemeral) {
-            const tagSpan = document.createElement('span');
-            tagSpan.className = 'ephemeral-tag';
-            tagSpan.textContent = '🔥 رسالة مؤقتة (تختفي تلقائياً)';
-            card.appendChild(tagSpan);
-
-            setTimeout(() => {
-                remove(ref(db, `aether_messages/${msgKey}`));
-            }, 10000);
-        }
-
-        streamArea.appendChild(card);
-        streamArea.scrollTop = streamArea.scrollHeight;
-    });
-
-    onChildRemoved(messagesRef, (snapshot) => {
-        const card = document.getElementById(`msg-${snapshot.key}`);
-        if (card) {
-            card.classList.add('vanish');
-            setTimeout(() => card.remove(), 800);
-        }
-    });
-
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-</script>
-
-</body>
+          <div class="card4">
+            <div class="icon4"><i class="fa-solid fa-comments"></i></div>
+            <h6>Live Help</h6>
+            <p>Ticket &amp; seat assistance</p>
+            <span>Chat with support &rarr;</span>
+          </div>
+        </div>
+    </section>
+    <script src="./js/main.js"></script>
+  </body>
 </html>
