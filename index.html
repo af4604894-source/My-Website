@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- إعدادات تشغيل الموقع كتطبيق على الموبايل (PWA) -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#090a0f">
+    <meta name="application-name" content="AETHER">
+    
+    <title>AETHER // شات مستقبلي</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at top left, #1a0b2e, #090a0f 60%, #0d1b2a);
+            color: #e0e6ed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100dvh; /* متوافق مع شاشات الموبايل بالكامل */
+            overflow: hidden;
+        }
+
+        /* كرات الإضاءة الخلفية */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: float 8s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+        .orb-1 { width: 280px; height: 280px; background: rgba(0, 242, 254, 0.25); top: 5%; right: 10%; }
+        .orb-2 { width: 320px; height: 320px; background: rgba(157, 78, 221, 0.25); bottom: 5%; left: 10%; animation-delay: -4s; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(25px, -25px) scale(1.1); }
+        }
+
+        /* الحاوية الزجاجية الرئيسية */
+        .cyber-deck {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            height: 100dvh;
+            background: rgba(17, 25, 40, 0.7);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* على شاشات الكمبيوتر يأخذ حواف دائرية وارتفاع محدد */
+        @media (min-width: 520px) {
+            .cyber-deck {
+                height: 88vh;
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            }
+        }
+
+        /* الهيدر */
+        .deck-header {
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 1px;
+            color: #00f2fe;
+            text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00f2fe;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00f2fe;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-badge {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 12px;
+            width: 95px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 13px;
+            outline: none;
+            text-align: center;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            padding: 5px 9px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.25s;
+        }
+
+        .icon-btn.active-ghost {
+            background: rgba(255, 42, 109, 0.2);
+            border-color: #ff2a6d;
+            color: #ff2a6d;
+            box-shadow: 0 0 12px rgba(255, 42, 109, 0.4);
+        }
+
+        .icon-btn.active-sound {
+            border-color: rgba(0, 242, 254, 0.4);
+            color: #00f2fe;
+        }
+
+        /* منطقة الرسايل */
+        .stream-area {
+            flex: 1;
+            padding: 18px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 242, 254, 0.3) transparent;
+        }
+
+        /* بطاقة الرسالة */
+        .data-card {
+            max-width: 82%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            position: relative;
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .data-card.vanish {
+            opacity: 0;
+            transform: scale(0.85);
+            filter: blur(5px);
+        }
+
+        /* رسالتي */
+        .my-card {
+            align-self: flex-start;
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.18), rgba(79, 172, 254, 0.08));
+            border: 1px solid rgba(0, 242, 254, 0.35);
+            border-right: 4px solid #00f2fe;
+        }
+
+        /* رسالة الطرف التاني */
+        .other-card {
+            align-self: flex-end;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(157, 78, 221, 0.35);
+            border-left: 4px solid #9d4edd;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            margin-bottom: 4px;
+            opacity: 0.85;
+        }
+
+        .my-card .card-sender { color: #00f2fe; font-weight: 700; }
+        .other-card .card-sender { color: #c77dff; font-weight: 700; }
+
+        .card-body {
+            font-size: 14.5px;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .ephemeral-tag {
+            font-size: 10px;
+            color: #ff2a6d;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* شريط الإدخال */
+        .input-dock {
+            padding: 12px 16px;
+            background: rgba(9, 10, 15, 0.55);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-dock input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            padding: 11px 16px;
+            border-radius: 16px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-dock input:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+        }
+
+        .send-trigger {
+            background: linear-gradient(135deg, #00f2fe, #4facfe);
+            color: #090a0f;
+            border: none;
+            padding: 0 20px;
+            border-radius: 16px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .send-trigger:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="cyber-deck">
+    <div class="deck-header">
+        <div class="brand">
+            <div class="status-dot"></div>
+            <span>AETHER</span>
+        </div>
+        <div class="controls">
+            <button id="soundToggle" class="icon-btn active-sound" title="تفعيل/كتم صوت الإشعارات">🔔</button>
+            <button id="ghostToggle" class="icon-btn" title="تفعيل التدمير الذاتي للرسائل بعد 10 ثواني">⏳ 10ث</button>
+            <input type="text" id="usernameInput" class="user-badge" placeholder="اكتب اسمك">
+        </div>
+    </div>
+
+    <div class="stream-area" id="streamArea"></div>
+
+    <div class="input-dock">
+        <input type="text" id="messageInput" placeholder="اكتب إشارة جديدة...">
+        <button id="sendBtn" class="send-trigger">بث</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded, remove, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // ⚠️ استبدل البيانات التالية ببيانات مشروعك من Firebase ⚠️
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const messagesRef = ref(db, 'aether_messages');
+
+    const streamArea = document.getElementById('streamArea');
+    const messageInput = document.getElementById('messageInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const ghostToggle = document.getElementById('ghostToggle');
+    const soundToggle = document.getElementById('soundToggle');
+
+    let isGhostMode = false;
+    let isSoundEnabled = true;
+    const pageLoadTime = Date.now();
+
+    // استرجاع الاسم المحفوظ أو تعيين اسم عشوائي مبدئي
+    const savedName = localStorage.getItem('aether_username');
+    if (savedName) {
+        usernameInput.value = savedName;
+    } else {
+        const randomId = Math.floor(100 + Math.random() * 900);
+        usernameInput.value = `مستخدم_${randomId}`;
+    }
+
+    usernameInput.addEventListener('input', () => {
+        localStorage.setItem('aether_username', usernameInput.value.trim());
+    });
+
+    // توليد نغمة تنبيه إلكترونية خفيفة بدون ملفات خارجية
+    function playPingSound() {
+        if (!isSoundEnabled) return;
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(680, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1020, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.08, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.25);
+        } catch (e) {}
+    }
+
+    soundToggle.addEventListener('click', () => {
+        isSoundEnabled = !isSoundEnabled;
+        soundToggle.textContent = isSoundEnabled ? '🔔' : '🔕';
+        soundToggle.classList.toggle('active-sound', isSoundEnabled);
+    });
+
+    ghostToggle.addEventListener('click', () => {
+        isGhostMode = !isGhostMode;
+        ghostToggle.classList.toggle('active-ghost', isGhostMode);
+    });
+
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function sendMessage() {
+        const text = messageInput.value.trim();
+        const sender = usernameInput.value.trim() || "مجهول";
+        if (!text) return;
+
+        push(messagesRef, {
+            sender: sender,
+            text: text,
+            timestamp: Date.now(),
+            ephemeral: isGhostMode
+        });
+
+        messageInput.value = '';
+    }
+
+    onChildAdded(messagesRef, (snapshot) => {
+        const data = snapshot.val();
+        const msgKey = snapshot.key;
+        const currentUser = usernameInput.value.trim() || "مجهول";
+        const isMe = (data.sender === currentUser);
+
+        // تشغيل صوت التنبيه للرسائل الجديدة الواردة من الآخرين فقط
+        if (!isMe && data.timestamp > pageLoadTime) {
+            playPingSound();
+        }
+
+        const card = document.createElement('div');
+        card.id = `msg-${msgKey}`;
+        card.className = `data-card ${isMe ? 'my-card' : 'other-card'}`;
+
+        // حماية النصوص من حقن الأكواد (XSS)
+        const safeSender = document.createTextNode(data.sender);
+        const safeText = document.createTextNode(data.text);
+
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'card-meta';
+        
+        const senderSpan = document.createElement('span');
+        senderSpan.className = 'card-sender';
+        senderSpan.appendChild(safeSender);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.textContent = formatTime(data.timestamp);
+
+        metaDiv.appendChild(senderSpan);
+        metaDiv.appendChild(timeSpan);
+
+        const bodyDiv = document.createElement('div');
+        bodyDiv.className = 'card-body';
+        bodyDiv.appendChild(safeText);
+
+        card.appendChild(metaDiv);
+        card.appendChild(bodyDiv);
+
+        if (data.ephemeral) {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'ephemeral-tag';
+            tagSpan.textContent = '🔥 رسالة مؤقتة (تختفي تلقائياً)';
+            card.appendChild(tagSpan);
+
+            setTimeout(() => {
+                remove(ref(db, `aether_messages/${msgKey}`));
+            }, 10000);
+        }
+
+        streamArea.appendChild(card);
+        streamArea.scrollTop = streamArea.scrollHeight;
+    });
+
+    onChildRemoved(messagesRef, (snapshot) => {
+        const card = document.getElementById(`msg-${snapshot.key}`);
+        if (card) {
+            card.classList.add('vanish');
+            setTimeout(() => card.remove(), 800);
+        }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+</script>
+
+</body>
+</html>
