@@ -1,12 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. أسعار الفعاليات
   const eventPrices = {
     summit: 85,
     workshop: 45,
     concert: 60,
   };
 
-  // العناصر الأساسية من الصفحة
   const seats = document.querySelectorAll(".seat");
   const seatCodeInput = document.getElementById("seatCode");
   const selectedEventSelect = document.getElementById("selectedEvent");
@@ -17,17 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let calcExpression = "";
 
-  // 2. دالة تحديث المقاعد المختارة والسعر الإجمالي
   function updateBookingSummary() {
     const selectedSeats = document.querySelectorAll(".seat.selected");
     const seatNames = Array.from(selectedSeats).map((seat) =>
       seat.textContent.trim()
     );
 
-    // تحديث خانة المقاعد في الفورم
     seatCodeInput.value = seatNames.join(", ");
 
-    // حساب السعر بناءً على الفعالية المختارة × عدد المقاعد
     const currentEvent = selectedEventSelect.value;
     const ticketPrice = eventPrices[currentEvent] || 0;
     const total = seatNames.length * ticketPrice;
@@ -36,21 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
     calcExpression = total.toString();
   }
 
-  // تفعيل الضغط على المقاعد
   seats.forEach((seat) => {
     seat.addEventListener("click", () => {
-      if (seat.classList.contains("booked")) return; // تجاهل المحجوز
-
+      if (seat.classList.contains("booked")) return;
       seat.classList.toggle("selected");
       seat.classList.toggle("available");
       updateBookingSummary();
     });
   });
 
-  // تحديث السعر لو المستخدم غير الفعالية من القائمة
   selectedEventSelect.addEventListener("change", updateBookingSummary);
 
-  // ربط أزرار "Book Now" اللي في كروت الفعاليات بالفورم
   const bookNowBtns = document.querySelectorAll(".btn-card");
   const eventValues = ["summit", "workshop", "concert"];
   bookNowBtns.forEach((btn, index) => {
@@ -62,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 3. تشغيل أزرار الآلة الحاسبة (Calculator)
   calcButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const value = btn.textContent.trim();
@@ -72,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
         calcScreen.textContent = "$0";
       } else if (value === "=") {
         try {
-          // تنظيف علامة الدولار لو موجودة وحساب العملية
           const cleanExpr = calcExpression.replace(/\$/g, "");
           if (cleanExpr) {
             const result = Function(`"use strict"; return (${cleanExpr})`)();
@@ -86,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
           calcExpression = "";
         }
       } else {
-        // لو الشاشة بتعرض الإجمالي المبدئي وبدأ يكتب رقم جديد
         if (calcScreen.textContent === "$0" && !isNaN(value)) {
           calcExpression = value;
         } else {
@@ -97,11 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 4. تشغيل الفورم وإضافة الحجز لجدول الأدمن
-  let bookingCounter = 104; // تكملة بعد #BK-103
+  let bookingCounter = 104; 
 
   bookingForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // منع إعادة تحميل الصفحة
+    e.preventDefault();
 
     const name = document.getElementById("attendeeName").value.trim();
     const email = document.getElementById("attendeeEmail").value.trim();
@@ -111,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
         " ("
       )[0];
 
-    // التحقق من إدخال البيانات
     if (!name || !email) {
       alert("Please enter your full name and email address.");
       return;
@@ -122,14 +108,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // تحويل المقاعد المختارة إلى محجوزة (Booked)
     const selectedSeats = document.querySelectorAll(".seat.selected");
     selectedSeats.forEach((seat) => {
       seat.classList.remove("selected");
       seat.classList.add("booked");
     });
 
-    // إضافة صف جديد في جدول الـ Admin
     const newRow = document.createElement("tr");
     newRow.innerHTML = `
       <td>#BK-${bookingCounter++}</td>
@@ -140,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
     bookingsTableBody.appendChild(newRow);
 
-    // رسالة تأكيد وتصفير الفورم
     alert(`Booking Confirmed for ${name}!\nSeats: ${seatsText}`);
     bookingForm.reset();
     seatCodeInput.value = "";
